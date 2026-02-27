@@ -1,0 +1,64 @@
+name: dancecount
+description: "DanceCount: Manage dance batches, students, branches, and announcements easily."
+publish_to: 'none'
+
+version: 1.0.1+2
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  package_info_plus: ^8.0.0
+  email_otp: ^2.0.0
+  image_picker: ^1.0.4
+  path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
+  http: ^0.13.6
+  url_launcher: ^6.2.6
+  fl_chart: ^0.64.0
+  intl: ^0.18.1
+  table_calendar: ^3.0.9
+  flutter_image_compress: ^2.1.0
+  permission_handler: ^11.0.1
+  timeago: ^3.6.0
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/splash_screen.png
+    - assets/logo.png
+    - assets/student.jpeg
+    - assets/reports.jpeg
+    - assets/batch.jpeg
+    - assets/branch.jpeg
+    - assets/Announce.jpeg
+    - assets/batch_logo.jpeg
+    - assets/branch_logo.jpeg
+    - assets/student_logo.jpeg
+    - assets/success.png
+    - assets/fail.png
+    - assets/image.png
+
+
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700

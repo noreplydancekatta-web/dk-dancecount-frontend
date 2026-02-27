@@ -1,0 +1,58 @@
+# ========== FLUTTER / DART ==========
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+**/build/
+**/ios/Flutter/.last_build_id
+**/doc/api/
+pubspec.lock
+
+node_modules/
+.env
+
+# Obfuscation / symbolication
+app.*.symbols
+app.*.map.json
+
+# Android artifacts
+android/.gradle/
+android/app/debug
+android/app/profile
+android/app/release
+android/local.properties
+
+# iOS artifacts
+ios/Pods/
+ios/Runner.xcworkspace
+
+# ========== NODE BACKEND ==========
+node_modules/
+.env
+
+# ========== IDEs ==========
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+
+# ========== OTHER ==========
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# Optional catch-all
+*.env
