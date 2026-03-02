@@ -41,9 +41,13 @@ class _SignInPageState extends State<SignInPage> {
 
       if (response.statusCode == 200 &&
           responseData['message'] == 'OTP sent!') {
+        // ✅ Save email in SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('studio_email', email);
-
+        // ✅ Save studioId early from send-otp response
+        if (responseData['studioId'] != null) {
+          await prefs.setString('studio_id', responseData['studioId']);
+        }
         _showSnackbar('OTP sent to $email');
 
         Future.delayed(const Duration(milliseconds: 300), () {

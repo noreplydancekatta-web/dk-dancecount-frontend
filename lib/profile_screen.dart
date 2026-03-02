@@ -36,15 +36,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     studioId = prefs.getString('studio_id');
     userEmail = prefs.getString('loggedEmail');
     userPhone = prefs.getString('phone');
-    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-    debugPrint('>>> studio_id: $studioId');
-    debugPrint('>>> loggedEmail: $userEmail');
-    debugPrint('>>> userPhone: $userPhone');
-    debugPrint('>>> isLoggedIn: $isLoggedIn');
-
-    if (studioId == null || studioId!.isEmpty) {
-      debugPrint('>>> No valid studio_id found in preferences');
+    if (studioId == null) {
       setState(() => isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -55,80 +48,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       return;
     }
-
     await _fetchStudioData(studioId!);
   }
 
   Future<void> _fetchStudioData(String id) async {
     try {
-      debugPrint('>>> Fetching studio ID: $id for email: $userEmail');
       final res = await http.get(Uri.parse('$apiUrl$id'));
-
-      debugPrint('>>> API Response - Status: ${res.statusCode}');
-      debugPrint('>>> API Response - Body length: ${res.body.length} chars');
-
       if (res.statusCode == 200) {
-        final fetchedData = json.decode(res.body);
-
-        // ────────────────────────────────────────────────────────────────
-        // DEBUG PRINTS FOR FETCHED STUDIO DATA
-        // ────────────────────────────────────────────────────────────────
-        debugPrint('┌──────────────────────────────────────────────────────');
-        debugPrint('>>> FULL FETCHED STUDIO DATA:');
-        debugPrint('Body (pretty): ${const JsonEncoder.withIndent("  ").convert(fetchedData)}');
-        debugPrint('──────────────────── Key fields ──────────────────────');
-        debugPrint('  _id / studioId      → ${fetchedData['_id']}');
-        debugPrint('  studioName          → ${fetchedData['studioName']}');
-        debugPrint('  contactEmail        → ${fetchedData['contactEmail']}');
-        debugPrint('  contactNumber       → ${fetchedData['contactNumber']}');
-        debugPrint('  status              → ${fetchedData['status']}');
-        debugPrint('  registeredAddress   → ${fetchedData['registeredAddress']}');
-        debugPrint('  logoUrl             → ${fetchedData['logoUrl']}');
-        debugPrint('  studioPhotos count  → ${(fetchedData['studioPhotos'] as List?)?.length ?? 0}');
-        debugPrint('  ownerId             → ${fetchedData['ownerId']}');
-        debugPrint('  createdAt           → ${fetchedData['createdAt']}');
-        debugPrint('  updatedAt           → ${fetchedData['updatedAt']}');
-        debugPrint('└──────────────────────────────────────────────────────');
-
-        // Optional: Compare with logged email (for your debugging)
-        if (userEmail != null && fetchedData['contactEmail'] != null) {
-          final match = fetchedData['contactEmail'].toString().toLowerCase().trim() ==
-              userEmail!.toLowerCase().trim();
-          debugPrint('>>> Email match check: $match (API: ${fetchedData['contactEmail']} | Logged: $userEmail)');
-        }
-
         setState(() {
-          studioData = fetchedData;
+          studioData = json.decode(res.body);
           isLoading = false;
         });
       } else {
-        debugPrint('>>> Studio fetch failed: ${res.statusCode} - ${res.body}');
         setState(() => isLoading = false);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to load studio (HTTP ${res.statusCode})')),
-          );
-        }
       }
-    } catch (e, stack) {
-      debugPrint('>>> Error fetching profile: $e');
-      debugPrint('Stack trace: $stack');
+    } catch (e) {
+      debugPrint('Error fetching profile: $e');
       setState(() => isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
-        );
-      }
     }
   }
 
-  // ──────────────────────────────────────────────────────────────────────
-  // The rest of your code remains unchanged (logout, launchUrl, build, etc.)
-  // ──────────────────────────────────────────────────────────────────────
-
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.clear(); // ✅ clear session data
 
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
@@ -141,9 +83,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _launchUrl(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not launch $url')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not launch $url')));
     }
   }
 
@@ -155,9 +97,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       query: 'subject=Help&body=Hi Team,',
     );
     if (!await launchUrl(uri)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open email app')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open email app')));
     }
   }
 
@@ -223,12 +165,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // ACCOUNT section
+                  // ACCOUNT
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "Account",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   ListTile(
@@ -253,12 +198,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _thinDivider(),
                   const SizedBox(height: 16),
 
-                  // SUPPORT section
+                  // SUPPORT
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       "Support",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   // Policies
@@ -267,13 +215,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     leading: const Icon(Icons.policy),
                     title: const Text("Policies"),
                     trailing: Icon(
-                      _policiesOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      _policiesOpen
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
                     ),
                     onTap: () => setState(() => _policiesOpen = !_policiesOpen),
                   ),
                   if (_policiesOpen)
                     Padding(
-                      padding: const EdgeInsets.only(left: 0, top: 8, bottom: 12),
+                      padding: const EdgeInsets.only(
+                        left: 0,
+                        top: 8,
+                        bottom: 12,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -281,7 +235,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
-                              onPressed: () => _launchUrl("https://dancecount.com/privacy-policy/"),
+                              onPressed: () => _launchUrl(
+                                "https://dancecount.com/privacy-policy/",
+                              ),
                               icon: const Icon(Icons.privacy_tip, size: 18),
                               label: const Text("Privacy Policy"),
                               style: TextButton.styleFrom(
@@ -296,7 +252,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: TextButton.icon(
-                              onPressed: () => _launchUrl("https://dancecount.com/terms-conditions/"),
+                              onPressed: () => _launchUrl(
+                                "https://dancecount.com/terms-conditions/",
+                              ),
                               icon: const Icon(Icons.description, size: 18),
                               label: const Text("Terms & Conditions"),
                               style: TextButton.styleFrom(
@@ -319,13 +277,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     leading: const Icon(Icons.contact_support),
                     title: const Text("Contact Us"),
                     trailing: Icon(
-                      _contactOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                      _contactOpen
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
                     ),
                     onTap: () => setState(() => _contactOpen = !_contactOpen),
                   ),
                   if (_contactOpen)
                     Padding(
-                      padding: const EdgeInsets.only(left: 0, right: 16, top: 8, bottom: 12),
+                      padding: const EdgeInsets.only(
+                        left: 0,
+                        right: 16,
+                        top: 8,
+                        bottom: 12,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -343,7 +308,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
                               if (!await launchUrl(uri)) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Could not open email app')),
+                                  const SnackBar(
+                                    content: Text('Could not open email app'),
+                                  ),
                                 );
                               }
                             },
@@ -385,7 +352,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               MaterialPageRoute(builder: (_) => const HomeScreen()),
             );
           } else {
-            setState(() => _selectedIndex = index);
+            setState(() {
+              _selectedIndex = index;
+            });
           }
         },
         items: const [

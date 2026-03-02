@@ -4,36 +4,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/services.dart';
-class UpdateStudioProfileScreen extends StatefulWidget {
-  final Map<String, dynamic>? studioData;
 
-  const UpdateStudioProfileScreen({super.key, this.studioData});
+class UpdateStudioProfileScreen extends StatefulWidget {
+  const UpdateStudioProfileScreen({super.key});
 
   @override
   State<UpdateStudioProfileScreen> createState() =>
       _UpdateStudioProfileScreenState();
 }
-class CapitalizeWordsFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final text = newValue.text
-        .split(' ')
-        .map((word) =>
-            word.isNotEmpty
-                ? word[0].toUpperCase() + word.substring(1).toLowerCase()
-                : '')
-        .join(' ');
 
-    return newValue.copyWith(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
-  }
-}
 class _UpdateStudioProfileScreenState
     extends State<UpdateStudioProfileScreen> {
   String? existingLogoUrl;
@@ -67,79 +46,54 @@ class _UpdateStudioProfileScreenState
 
   String? studioId;
 
- 
-@override
-void initState() {
-  super.initState();
-  _loadStudioData();
-}
-
-Future<void> _loadStudioData() async {
-  final prefs = await SharedPreferences.getInstance();
-  studioId = prefs.getString('studio_id');
-
-  // Use passed studioData if available, otherwise fetch from API
-  final data = widget.studioData;
-
-  if (data != null) {
-    setState(() {
-      studioNameController.text = data['studioName'] ?? '';
-      registeredAddressController.text = data['registeredAddress'] ?? '';
-      emailController.text = data['contactEmail'] ?? '';
-      contactNumberController.text = data['contactNumber'] ?? '';
-      gstNumberController.text = data['gstNumber'] ?? '';
-      panController.text = data['panNumber'] ?? '';
-      aadharController.text = data['aadharNumber'] ?? '';
-      bankAccountController.text = data['bankAccountNumber'] ?? '';
-      reEnterBankAccountController.text = data['bankAccountNumber'] ?? '';
-      ifscController.text = data['bankIfscCode'] ?? '';
-      introController.text = data['studioIntroduction'] ?? '';
-      websiteController.text = data['studioWebsite'] ?? '';
-      facebookController.text = data['studioFacebook'] ?? '';
-      youtubeController.text = data['studioYoutube'] ?? '';
-      instagramController.text = data['studioInstagram'] ?? '';
-      existingLogoUrl = data['logoUrl'];
-      existingStudioPhotos =
-          (data['studioPhotos'] as List?)?.cast<String>() ?? [];
-      existingAadharFrontUrl = data['aadharFrontUrl'];
-      existingAadharBackUrl = data['aadharBackUrl'];
-    });
-  } else if (studioId != null) {
-    // Fallback: fetch from API if studioData wasn't passed
-    final response = await http.get(
-      Uri.parse('http://147.93.19.17:4000/api/studios/$studioId'),
-    );
-    if (response.statusCode == 200) {
-      final fetched = jsonDecode(response.body);
-      setState(() {
-        studioNameController.text = fetched['studioName'] ?? '';
-        registeredAddressController.text = fetched['registeredAddress'] ?? '';
-        emailController.text = fetched['contactEmail'] ?? '';
-        contactNumberController.text = fetched['contactNumber'] ?? '';
-        gstNumberController.text = fetched['gstNumber'] ?? '';
-        panController.text = fetched['panNumber'] ?? '';
-        aadharController.text = fetched['aadharNumber'] ?? '';
-        bankAccountController.text = fetched['bankAccountNumber'] ?? '';
-        reEnterBankAccountController.text = fetched['bankAccountNumber'] ?? '';
-        ifscController.text = fetched['bankIfscCode'] ?? '';
-        introController.text = fetched['studioIntroduction'] ?? '';
-        websiteController.text = fetched['studioWebsite'] ?? '';
-        facebookController.text = fetched['studioFacebook'] ?? '';
-        youtubeController.text = fetched['studioYoutube'] ?? '';
-        instagramController.text = fetched['studioInstagram'] ?? '';
-        existingLogoUrl = fetched['logoUrl'];
-        existingStudioPhotos =
-            (fetched['studioPhotos'] as List?)?.cast<String>() ?? [];
-        existingAadharFrontUrl = fetched['aadharFrontUrl'];
-        existingAadharBackUrl = fetched['aadharBackUrl'];
-      });
-    } else {
-      _showSnackbar("Failed to load studio data");
-    }
-  } else {
-    _showSnackbar("No studio ID found. Please log in again.");
+  @override
+  void initState() {
+    super.initState();
+    _loadStudioData();
   }
-}
+
+  Future<void> _loadStudioData() async {
+    final prefs = await SharedPreferences.getInstance();
+    studioId = prefs.getString('studio_id');
+
+    if (studioId != null) {
+      final response = await http.get(
+        Uri.parse('http://147.93.19.17:4000/api/studios/$studioId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          studioNameController.text = data['studioName'] ?? '';
+          registeredAddressController.text = data['registeredAddress'] ?? '';
+          emailController.text = data['contactEmail'] ?? '';
+          contactNumberController.text = data['contactNumber'] ?? '';
+          gstNumberController.text = data['gstNumber'] ?? '';
+          panController.text = data['panNumber'] ?? '';
+          aadharController.text = data['aadharNumber'] ?? '';
+          bankAccountController.text = data['bankAccountNumber'] ?? '';
+          reEnterBankAccountController.text = data['bankAccountNumber'] ?? '';
+          ifscController.text = data['bankIfscCode'] ?? '';
+          introController.text = data['studioIntroduction'] ?? '';
+          websiteController.text = data['studioWebsite'] ?? '';
+          facebookController.text = data['studioFacebook'] ?? '';
+          youtubeController.text = data['studioYoutube'] ?? '';
+          instagramController.text = data['studioInstagram'] ?? '';
+          existingLogoUrl = data['logoUrl'];
+          existingStudioPhotos =
+              (data['studioPhotos'] as List?)?.cast<String>() ?? [];
+          existingAadharFrontUrl = data['aadharFrontUrl'];
+          existingAadharBackUrl = data['aadharBackUrl'];
+        });
+      } else {
+        _showSnackbar("Failed to load studio data");
+      }
+    } else {
+      _showSnackbar("No studio ID found in local storage");
+    }
+  }
+
   Future<void> _pickImage(Function(File) onPicked) async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) onPicked(File(picked.path));
@@ -339,8 +293,8 @@ Future<void> _loadStudioData() async {
           key: _formKey,
           child: Column(
             children: [
-              _field('Studio Name*', studioNameController, inputFormatters: [CapitalizeWordsFormatter()],),
-              _field('Registered Address*', registeredAddressController, inputFormatters: [CapitalizeWordsFormatter()],),
+              _field('Studio Name*', studioNameController),
+              _field('Registered Address*', registeredAddressController),
               _field('Official Contact Email ID*', emailController),
               _field('Official Contact Number*', contactNumberController),
               _field('GST Registration Number (Optional)', gstNumberController),
@@ -427,7 +381,7 @@ Future<void> _loadStudioData() async {
                 },
               ),
               const SizedBox(height: 16),
-              _field('Studio Introduction*', introController, maxLines: 4, inputFormatters: [CapitalizeWordsFormatter()],),
+              _field('Studio Introduction*', introController, maxLines: 4),
               _field('Studio Website', websiteController),
               _field('Studio Facebook Page', facebookController),
               _field('Studio YouTube Page', youtubeController),
@@ -455,13 +409,12 @@ Future<void> _loadStudioData() async {
   }
 
   Widget _field(String label, TextEditingController controller,
-      {int maxLines = 1,List<TextInputFormatter>? inputFormatters,}) {
+      {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: controller,
         maxLines: maxLines,
-        inputFormatters: inputFormatters,
         validator: (v) => (v == null || v.trim().isEmpty) &&
                 label.contains('*')
             ? 'Required'
@@ -509,4 +462,4 @@ Widget _uploadButton(String label,
     ),
   );
 }
-}  
+}

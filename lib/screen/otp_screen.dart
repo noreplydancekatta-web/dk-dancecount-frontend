@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,10 +16,8 @@ class OtpVerificationPage extends StatefulWidget {
 }
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
-  final List<TextEditingController> _otpControllers = List.generate(
-    6,
-    (index) => TextEditingController(),
-  );
+  final List<TextEditingController> _otpControllers =
+      List.generate(6, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
   bool verifying = false;
@@ -73,29 +72,22 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     try {
       final response = await http.post(
         Uri.parse('http://147.93.19.17:5003/verify-otp'),
+        
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': widget.email, 'otp': otp}),
       );
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print('┌─ VERIFY-OTP RESPONSE ────────────────────────────────');
-        print('Status: ${response.statusCode}');
-        print('Full body: ${response.body}');
-        print('studioId     → ${responseData['studioId']}');
-        print('contactNumber→ ${responseData['contactNumber']}');
-        print('└──────────────────────────────────────────────────────');
 
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200 && responseData['studioId'] != null) {
         final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('studio_id', responseData['studioId']);
+        await prefs.setString(
+            'loggedEmail', responseData['email'] ?? widget.email);
+        await prefs.setString(
+            'phone', responseData['contactNumber'] ?? ''); // NEW
+        await prefs.setBool('isLoggedIn', true); // <<-- add this to persist session
 
-        // ✅ Clear ALL old session data before writing new one
-        await prefs.clear();
-        await prefs.setString('loggedEmail', widget.email);
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('studio_id', responseData['studioId'] ?? '');
-        await prefs.setString('phone', responseData['contactNumber'] ?? '');
-        debugPrint('>>> saved studio_id: ${responseData['studioId']}');
-
-        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DanceCountApp()),
@@ -131,10 +123,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void _showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        content:
+            Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.deepPurpleAccent,
       ),
     );
